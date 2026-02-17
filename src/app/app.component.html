@@ -1,0 +1,204 @@
+<div class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-4">
+
+  <!-- Join Screen -->
+  <div *ngIf="!isJoined" class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md text-center">
+    <div class="w-20 h-20 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+      <svg viewBox="0 0 24 24" width="40" height="40" fill="white">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+      </svg>
+    </div>
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+      Chat<span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">Wave</span>
+    </h1>
+    <p class="text-gray-600 mb-8">Real-time messaging platform</p>
+
+    <div class="space-y-4">
+      <input
+        [(ngModel)]="username"
+        (keydown.enter)="joinChat()"
+        type="text"
+        placeholder="Enter your username..."
+        class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none transition text-center text-lg"
+      />
+      <button
+        (click)="joinChat()"
+        [disabled]="!username.trim()"
+        class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold text-lg hover:shadow-lg transition disabled:opacity-50"
+      >
+        Join Chat 🚀
+      </button>
+    </div>
+  </div>
+
+  <!-- Chat Screen -->
+  <div *ngIf="isJoined" class="w-full max-w-4xl flex gap-4" style="height: 85vh;">
+
+    <!-- Sidebar - Online Users -->
+    <div class="w-64 bg-white rounded-2xl shadow-xl p-4 flex flex-col">
+      <h3 class="font-bold text-gray-900 mb-1">Online Users</h3>
+      <div class="flex items-center gap-1 mb-4">
+        <div class="w-2 h-2 rounded-full bg-green-400"></div>
+        <span class="text-sm text-gray-500">{{ onlineUsers.length }} online</span>
+      </div>
+
+      <div class="space-y-2 flex-1 overflow-y-auto">
+        <div *ngFor="let user of onlineUsers" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
+            {{ user.charAt(0).toUpperCase() }}
+          </div>
+          <div>
+            <div class="font-medium text-gray-900 text-sm">
+              {{ user }}
+              <span *ngIf="user === username" class="text-purple-600 text-xs">(you)</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <div class="w-1.5 h-1.5 rounded-full bg-green-400"></div>
+              <span class="text-xs text-gray-400">Online</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Bot always shown -->
+        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-r from-green-500 to-teal-500 flex items-center justify-center text-sm">
+            🤖
+          </div>
+          <div>
+            <div class="font-medium text-gray-900 text-sm">AI Assistant</div>
+            <div class="flex items-center gap-1">
+              <div class="w-1.5 h-1.5 rounded-full bg-green-400"></div>
+              <span class="text-xs text-gray-400">Always online</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="flex-1 bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
+
+      <!-- Chat Header -->
+      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold">
+            G
+          </div>
+          <div>
+            <h2 class="text-white font-bold">General Chat</h2>
+            <div class="flex items-center gap-1">
+              <div class="w-2 h-2 rounded-full bg-green-400"></div>
+              <span class="text-white/80 text-sm">{{ onlineUsers.length }} members + 🤖 AI online</span>
+            </div>
+          </div>
+        </div>
+        <div class="text-white font-semibold text-sm bg-white/20 px-3 py-1 rounded-full">
+          👤 {{ username }}
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-4" #messagesContainer>
+
+        <!-- Welcome -->
+        <div class="flex justify-center">
+          <span class="bg-gray-100 text-gray-500 text-xs px-4 py-2 rounded-full">
+            Welcome to ChatWave! 👋 AI Assistant is here to help!
+          </span>
+        </div>
+
+        <div *ngFor="let msg of messages">
+
+          <!-- System Message -->
+          <div *ngIf="msg.type === 'system'" class="flex justify-center">
+            <span class="bg-purple-50 text-purple-600 text-xs px-4 py-2 rounded-full">
+              {{ msg.message }}
+            </span>
+          </div>
+
+          <!-- My Message -->
+          <div *ngIf="msg.type === 'message' && isMyMessage(msg)" class="flex items-end gap-2 justify-end">
+            <div class="flex flex-col items-end gap-1 max-w-xs">
+              <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl rounded-br-none px-4 py-3">
+                <p class="text-white text-sm">{{ msg.message }}</p>
+              </div>
+              <span class="text-gray-400 text-xs">{{ msg.time }}</span>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+              {{ username.charAt(0).toUpperCase() }}
+            </div>
+          </div>
+
+          <!-- Bot Message -->
+          <div *ngIf="msg.type === 'message' && !isMyMessage(msg) && msg.isBot" class="flex items-end gap-2">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-teal-500 flex items-center justify-center text-sm flex-shrink-0">
+              🤖
+            </div>
+            <div class="flex flex-col gap-1 max-w-sm">
+              <span class="text-xs text-green-600 font-semibold ml-1">{{ msg.username }}</span>
+              <div class="bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-2xl rounded-bl-none px-4 py-3">
+                <p class="text-gray-800 text-sm">{{ msg.message }}</p>
+              </div>
+              <span class="text-gray-400 text-xs ml-1">{{ msg.time }}</span>
+            </div>
+          </div>
+
+          <!-- Other User Message -->
+          <div *ngIf="msg.type === 'message' && !isMyMessage(msg) && !msg.isBot" class="flex items-end gap-2">
+            <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm font-bold flex-shrink-0">
+              {{ msg.username!.charAt(0).toUpperCase() }}
+            </div>
+            <div class="flex flex-col gap-1 max-w-xs">
+              <span class="text-xs text-gray-500 ml-1">{{ msg.username }}</span>
+              <div class="bg-gray-100 rounded-2xl rounded-bl-none px-4 py-3">
+                <p class="text-gray-800 text-sm">{{ msg.message }}</p>
+              </div>
+              <span class="text-gray-400 text-xs ml-1">{{ msg.time }}</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bot Typing Indicator -->
+        <div *ngIf="isBotTyping" class="flex items-end gap-2">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-teal-500 flex items-center justify-center text-sm flex-shrink-0">
+            🤖
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-green-600 font-semibold ml-1">AI Assistant</span>
+            <div class="bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-2xl rounded-bl-none px-4 py-3">
+              <div class="flex gap-1 items-center h-4">
+                <div class="w-2 h-2 rounded-full bg-green-400 animate-bounce" style="animation-delay: 0ms"></div>
+                <div class="w-2 h-2 rounded-full bg-green-400 animate-bounce" style="animation-delay: 150ms"></div>
+                <div class="w-2 h-2 rounded-full bg-green-400 animate-bounce" style="animation-delay: 300ms"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Input -->
+      <div class="p-4 border-t border-gray-100">
+        <div class="flex gap-3 items-center">
+          <input
+            [(ngModel)]="messageInput"
+            (keydown.enter)="sendMessage()"
+            type="text"
+            placeholder="Type a message... 🤖 AI will reply!"
+            class="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none transition text-sm"
+          />
+          <button
+            (click)="sendMessage()"
+            [disabled]="!messageInput.trim()"
+            class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white w-12 h-12 rounded-xl flex items-center justify-center hover:shadow-lg transition disabled:opacity-50"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
