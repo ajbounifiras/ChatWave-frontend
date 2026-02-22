@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class ChatService {
   private socket: Socket;
-  private serverUrl = 'http://localhost:3001';
+  private serverUrl = 'https://chatwave-backend-536w.onrender.com';
 
   constructor() {
     this.socket = io(this.serverUrl);
